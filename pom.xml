@@ -26,6 +26,9 @@
 
         <telegrabots.version>6.5.0</telegrabots.version>
         <kotlin-coroutines.version>1.7.1</kotlin-coroutines.version>
+
+        <detect.version>1.22.0</detect.version>
+        <antrun-plugin.version>3.1.0</antrun-plugin.version>
     </properties>
 
     <dependencies>
@@ -37,6 +40,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- PROJECT -->
+            <dependency>
+                <groupId>io.lonmstalker.telegrambots</groupId>
+                <artifactId>telegrambots-reactive-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- TELEGRAM -->
             <dependency>
                 <groupId>org.telegram</groupId>
@@ -89,6 +99,30 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.ozsie</groupId>
+                    <artifactId>detekt-maven-plugin</artifactId>
+                    <version>${detect.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.gitlab.arturbosch.detekt</groupId>
+                            <artifactId>detekt-rules-libraries</artifactId>
+                            <version>${detect.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <repositories>
