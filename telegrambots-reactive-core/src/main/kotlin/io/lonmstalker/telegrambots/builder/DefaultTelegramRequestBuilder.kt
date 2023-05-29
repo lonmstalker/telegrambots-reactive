@@ -1,6 +1,6 @@
 package io.lonmstalker.telegrambots.builder
 
-import io.lonmstalker.telegrambots.bots.DefaultBotOptions
+import io.lonmstalker.telegrambots.bot.DefaultBotOptions
 import io.lonmstalker.telegrambots.constants.MediaTypeConstants.jsonType
 import io.lonmstalker.telegrambots.constants.MediaTypeConstants.multipartType
 import io.lonmstalker.telegrambots.constants.MethodTypeConstants.AUDIT
@@ -56,11 +56,11 @@ import io.lonmstalker.telegrambots.constants.TelegramSendConstants.SEND_UPLOAD_S
 import io.lonmstalker.telegrambots.constants.TelegramSendConstants.SEND_VIDEO
 import io.lonmstalker.telegrambots.constants.TelegramSendConstants.SEND_VIDEO_NOTE
 import io.lonmstalker.telegrambots.constants.TelegramSendConstants.SEND_VOICE
-import io.lonmstalker.telegrambots.extensions.internal.*
-import io.lonmstalker.telegrambots.extensions.internal.addFile
-import io.lonmstalker.telegrambots.extensions.internal.addPart
-import io.lonmstalker.telegrambots.extensions.internal.addRelatedPart
-import io.lonmstalker.telegrambots.extensions.internal.addSerializePart
+import io.lonmstalker.telegrambots.extension.internal.*
+import io.lonmstalker.telegrambots.extension.internal.addFile
+import io.lonmstalker.telegrambots.extension.internal.addPart
+import io.lonmstalker.telegrambots.extension.internal.addRelatedPart
+import io.lonmstalker.telegrambots.extension.internal.addSerializePart
 import io.lonmstalker.telegrambots.serde.SerializeApi
 import okhttp3.MultipartBody
 import okhttp3.Request
@@ -76,11 +76,10 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMe
 import java.io.Serializable
 
 class DefaultTelegramRequestBuilder(
-    private val botToken: () -> String,
-    private val serializeApi: SerializeApi,
-    private val options: DefaultBotOptions
+    botToken: String,
+    private val serializeApi: SerializeApi, options: DefaultBotOptions
 ) {
-    private val baseUrl = this.options.baseUrl + this.botToken.invoke() + SLASH
+    private val baseUrl = options.baseUrl + botToken + SLASH
 
     fun execute(method: SendDocument): Request =
         MultipartBody.Builder()

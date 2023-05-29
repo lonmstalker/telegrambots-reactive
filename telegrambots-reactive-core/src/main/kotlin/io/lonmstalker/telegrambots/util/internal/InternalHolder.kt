@@ -3,8 +3,9 @@ package io.lonmstalker.telegrambots.util.internal
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.lonmstalker.telegrambots.serde.impl.JacksonDeserializeApi
 import io.lonmstalker.telegrambots.serde.impl.JacksonSerializeApi
+import java.util.concurrent.atomic.AtomicInteger
 
-internal object MapperHolder {
+internal object InternalHolder {
 
     @Volatile
     private var objectMapper: ObjectMapper? = null
@@ -14,6 +15,8 @@ internal object MapperHolder {
 
     @Volatile
     private var jacksonDeserializeApi: JacksonDeserializeApi? = null
+
+    private val botIdIncrementer: AtomicInteger = AtomicInteger(0)
 
     @Synchronized
     fun getObjectMapper(): ObjectMapper =
@@ -28,8 +31,7 @@ internal object MapperHolder {
     @Synchronized
     fun getJacksonSerializeApi(objectMapper: ObjectMapper): JacksonSerializeApi =
         if (jacksonSerializeApi == null) {
-            JacksonSerializeApi(objectMapper)
-                .apply { jacksonSerializeApi = this }
+            JacksonSerializeApi(objectMapper).apply { jacksonSerializeApi = this }
         } else {
             jacksonSerializeApi!!
         }
@@ -37,9 +39,10 @@ internal object MapperHolder {
     @Synchronized
     fun getJacksonDeserializeApi(objectMapper: ObjectMapper): JacksonDeserializeApi =
         if (jacksonSerializeApi == null) {
-            JacksonDeserializeApi(objectMapper)
-                .apply { jacksonDeserializeApi = this }
+            JacksonDeserializeApi(objectMapper).apply { jacksonDeserializeApi = this }
         } else {
             jacksonDeserializeApi!!
         }
+
+    fun getBotIdIncrementer(): AtomicInteger = this.botIdIncrementer
 }

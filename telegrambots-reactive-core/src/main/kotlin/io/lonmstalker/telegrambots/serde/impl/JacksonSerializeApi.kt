@@ -1,7 +1,7 @@
 package io.lonmstalker.telegrambots.serde.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.lonmstalker.telegrambots.util.internal.MapperHolder.getObjectMapper
+import io.lonmstalker.telegrambots.util.internal.InternalHolder.getObjectMapper
 import io.lonmstalker.telegrambots.serde.SerializeApi
 
 class JacksonSerializeApi @JvmOverloads constructor(

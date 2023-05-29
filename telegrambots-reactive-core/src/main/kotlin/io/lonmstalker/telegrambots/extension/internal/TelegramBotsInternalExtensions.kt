@@ -1,4 +1,4 @@
-package io.lonmstalker.telegrambots.extensions.internal
+package io.lonmstalker.telegrambots.extension.internal
 
 import io.lonmstalker.telegrambots.constants.MediaTypeConstants.octetStreamType
 import io.lonmstalker.telegrambots.constants.MediaTypeConstants.textType

@@ -1,7 +1,7 @@
 package io.lonmstalker.telegrambots.bot
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.lonmstalker.telegrambots.bots.impl.ReactiveTelegramLongPoolingBot
+import io.lonmstalker.telegrambots.bot.impl.DefaultReactiveTelegramLongPoolingBot
 import io.lonmstalker.telegrambots.constants.Constants.BOT_DEFAULT_MESSAGE
 import io.lonmstalker.telegrambots.constants.Constants.IMAGE_CAPTION
 import io.lonmstalker.telegrambots.constants.Constants.IMAGE_FILENAME
@@ -19,11 +19,11 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import reactor.core.publisher.Flux
 
-class CustomReactiveTelegramLongPoolingBot(
+class CustomDefaultReactiveTelegramLongPoolingBot(
     httpClient: OkHttpClient,
     appProperties: AppProperties,
     objectMapper: ObjectMapper
-) : ReactiveTelegramLongPoolingBot(httpClient, { appProperties.bot.token }, objectMapper) {
+) : DefaultReactiveTelegramLongPoolingBot(httpClient, { appProperties.bot.token }, objectMapper) {
 
     override fun onUpdateReceived(update: Flux<Update>): Publisher<Void> =
         update

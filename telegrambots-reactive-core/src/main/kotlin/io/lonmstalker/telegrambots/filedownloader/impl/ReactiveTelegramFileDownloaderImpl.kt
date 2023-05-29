@@ -3,8 +3,8 @@ package io.lonmstalker.telegrambots.filedownloader.impl
 import io.lonmstalker.telegrambots.constants.TelegramBotsConstants.DEFAULT_CHUNK_SIZE
 import io.lonmstalker.telegrambots.constants.TelegramUrlConstants.TELEGRAM_FILE_URL
 import io.lonmstalker.telegrambots.filedownloader.ReactiveTelegramFileDownloader
-import io.lonmstalker.telegrambots.publisher.OkFluxFileDownloadPublisher
-import io.lonmstalker.telegrambots.publisher.OkMonoFileDownloadPublisher
+import io.lonmstalker.telegrambots.callback.OkFluxFileDownloadCallback
+import io.lonmstalker.telegrambots.callback.OkMonoFileDownloadCallback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.commons.io.FileUtils
@@ -60,14 +60,14 @@ class ReactiveTelegramFileDownloaderImpl @JvmOverloads constructor(
         Mono.create {
             this.httpClient
                 .newCall(request)
-                .enqueue(OkMonoFileDownloadPublisher(it))
+                .enqueue(OkMonoFileDownloadCallback(it))
         }
 
     private fun callApiStream(request: Request): Flux<ByteArray> =
         Flux.create {
             this.httpClient
                 .newCall(request)
-                .enqueue(OkFluxFileDownloadPublisher(this.chunkSize, it))
+                .enqueue(OkFluxFileDownloadCallback(this.chunkSize, it))
         }
 
     private fun getTempFile(fileName: String = System.currentTimeMillis().toString()) =

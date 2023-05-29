@@ -1,4 +1,4 @@
-package io.lonmstalker.telegrambots.publisher
+package io.lonmstalker.telegrambots.callback
 
 import io.lonmstalker.telegrambots.constants.ErrorConstants.LOG_EMPTY_BODY_RESPONSE
 import io.lonmstalker.telegrambots.constants.TelegramBotsConstants.DEFAULT_CHUNK_SIZE
@@ -11,7 +11,7 @@ import reactor.core.publisher.FluxSink
 import java.io.IOException
 import java.util.Arrays
 
-class OkFluxFileDownloadPublisher(
+class OkFluxFileDownloadCallback(
     private val chunkSize: Int = DEFAULT_CHUNK_SIZE,
     private val sink: FluxSink<ByteArray>
 ) : Callback {
@@ -42,6 +42,6 @@ class OkFluxFileDownloadPublisher(
 
     companion object {
         @JvmStatic
-        private val log = LoggerFactory.getLogger(OkFluxFileDownloadPublisher::class.java)
+        private val log = LoggerFactory.getLogger(OkFluxFileDownloadCallback::class.java)
     }
 }

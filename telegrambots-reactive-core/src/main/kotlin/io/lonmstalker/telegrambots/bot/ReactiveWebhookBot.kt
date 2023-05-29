@@ -1,4 +1,4 @@
-package io.lonmstalker.telegrambots.bots
+package io.lonmstalker.telegrambots.bot
 
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook
@@ -13,5 +13,7 @@ interface ReactiveWebhookBot : TelegramBot {
 
     fun setWebhook(webHook: SetWebhook): Mono<Boolean>
 
-    fun getBotPath(): String?
+    fun getBotPath(): String
+
+    val id: Int
 }

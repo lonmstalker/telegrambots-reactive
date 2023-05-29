@@ -1,5 +1,6 @@
 package io.lonmstalker.telegrambots.builder
 
+import io.lonmstalker.telegrambots.bot.DefaultBotOptions
 import io.lonmstalker.telegrambots.constants.MediaTypeConstants
 import io.lonmstalker.telegrambots.constants.TelegramApiConstants.ALLOWED_UPDATES
 import io.lonmstalker.telegrambots.constants.TelegramApiConstants.CALLBACK
@@ -11,21 +12,20 @@ import io.lonmstalker.telegrambots.constants.TelegramApiConstants.SECRET_TOKEN
 import io.lonmstalker.telegrambots.constants.TelegramApiConstants.URL
 import io.lonmstalker.telegrambots.constants.TelegramBotsConstants.SLASH
 import io.lonmstalker.telegrambots.constants.TelegramSendConstants.SEND_WEBHOOK
-import io.lonmstalker.telegrambots.extensions.internal.addFile
-import io.lonmstalker.telegrambots.extensions.internal.addPart
-import io.lonmstalker.telegrambots.extensions.internal.addSerializePart
+import io.lonmstalker.telegrambots.extension.internal.addFile
+import io.lonmstalker.telegrambots.extension.internal.addPart
+import io.lonmstalker.telegrambots.extension.internal.addSerializePart
 import io.lonmstalker.telegrambots.serde.SerializeApi
 import okhttp3.MultipartBody
 import okhttp3.Request
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook
-import org.telegram.telegrambots.meta.generics.BotOptions
 
 class WebHookRegisterBuilder(
     private val serializeApi: SerializeApi,
 ) {
 
-    fun registerWebHook(botPath: String?, webHook: SetWebhook, options: BotOptions): Request {
+    fun registerWebHook(botPath: String?, webHook: SetWebhook, options: DefaultBotOptions): Request {
         webHook.validate()
         return MultipartBody.Builder()
             .addPart(URL, this.getBotUrl(webHook.url, botPath))

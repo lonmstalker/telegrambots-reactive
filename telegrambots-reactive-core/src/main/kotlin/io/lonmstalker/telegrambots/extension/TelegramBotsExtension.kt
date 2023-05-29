@@ -1,6 +1,6 @@
-package io.lonmstalker.telegrambots.extensions
+package io.lonmstalker.telegrambots.extension
 
-import io.lonmstalker.telegrambots.bots.ReactiveAbsSender
+import io.lonmstalker.telegrambots.bot.ReactiveAbsSender
 import org.reactivestreams.Publisher
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import java.io.Serializable

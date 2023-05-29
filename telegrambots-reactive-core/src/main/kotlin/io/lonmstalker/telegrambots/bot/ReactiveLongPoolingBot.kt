@@ -1,4 +1,4 @@
-package io.lonmstalker.telegrambots.bots
+package io.lonmstalker.telegrambots.bot
 
 import org.reactivestreams.Publisher
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -18,4 +18,6 @@ interface ReactiveLongPoolingBot : TelegramBot {
     fun clearWebhook(): Mono<Boolean>
 
     fun onClosing() {}
+
+    val id: Int
 }

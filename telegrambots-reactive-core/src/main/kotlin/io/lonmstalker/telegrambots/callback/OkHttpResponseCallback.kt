@@ -1,16 +1,16 @@
-package io.lonmstalker.telegrambots.publisher
+package io.lonmstalker.telegrambots.callback
 
 import io.lonmstalker.telegrambots.constants.ErrorConstants.LOG_EMPTY_BODY_RESPONSE
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
+import io.lonmstalker.telegrambots.serde.DeserializeApi
+import okhttp3.*
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.MonoSink
 import java.io.IOException
-import java.io.InputStream
 
-class OkMonoFileDownloadPublisher(
-    private val sink: MonoSink<InputStream>
+class OkHttpResponseCallback<T>(
+    private val clazz: Class<T>,
+    private val sink: MonoSink<T>,
+    private val deserializeApi: DeserializeApi
 ) : Callback {
 
     override fun onFailure(call: Call, e: IOException) {
@@ -19,13 +19,13 @@ class OkMonoFileDownloadPublisher(
 
     override fun onResponse(call: Call, response: Response) {
         response.body
-            ?.byteStream()
-            ?.let { this.sink.success(it) }
+            ?.bytes()
+            ?.let { this.sink.success(deserializeApi.deserialize(it, clazz)) }
             ?: this.sink.success().apply { log.error(LOG_EMPTY_BODY_RESPONSE, response.code) }
     }
 
     companion object {
         @JvmStatic
-        private val log = LoggerFactory.getLogger(OkMonoFileDownloadPublisher::class.java)
+        private val log = LoggerFactory.getLogger(OkHttpResponseCallback::class.java)
     }
 }

@@ -1,9 +1,9 @@
-package io.lonmstalker.telegrambots.bots.impl
+package io.lonmstalker.telegrambots.bot.impl
 
-import io.lonmstalker.telegrambots.bots.DefaultBotOptions
-import io.lonmstalker.telegrambots.bots.ReactiveAbsSender
+import io.lonmstalker.telegrambots.bot.DefaultBotOptions
+import io.lonmstalker.telegrambots.bot.ReactiveAbsSender
 import io.lonmstalker.telegrambots.builder.DefaultTelegramRequestBuilder
-import io.lonmstalker.telegrambots.publisher.OkHttpResponsePublisher
+import io.lonmstalker.telegrambots.callback.OkHttpResponseCallback
 import io.lonmstalker.telegrambots.serde.DeserializeApi
 import io.lonmstalker.telegrambots.serde.SerializeApi
 import okhttp3.OkHttpClient
@@ -25,7 +25,7 @@ import java.io.Serializable
 open class DefaultReactiveAbsSender(
     private val httpClient: OkHttpClient,
     private val deserializeApi: DeserializeApi,
-    botToken: () -> String, serializeApi: SerializeApi, options: DefaultBotOptions,
+    botToken: String, serializeApi: SerializeApi, options: DefaultBotOptions,
 ) : ReactiveAbsSender {
     private val requestBuilder = DefaultTelegramRequestBuilder(botToken, serializeApi, options)
 
@@ -116,7 +116,7 @@ open class DefaultReactiveAbsSender(
                 Mono.create {
                     this.httpClient
                         .newCall(request)
-                        .enqueue(OkHttpResponsePublisher(clazz, it, this.deserializeApi))
+                        .enqueue(OkHttpResponseCallback(clazz, it, this.deserializeApi))
                 }
             }
 
@@ -124,7 +124,7 @@ open class DefaultReactiveAbsSender(
         Mono.create {
             this.httpClient
                 .newCall(request)
-                .enqueue(OkHttpResponsePublisher(T::class.java, it, this.deserializeApi))
+                .enqueue(OkHttpResponseCallback(T::class.java, it, this.deserializeApi))
         }
 
 }

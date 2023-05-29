@@ -1,5 +1,7 @@
 package io.lonmstalker.telegrambots.constants
 
+import io.lonmstalker.telegrambots.constants.TelegramBotsConstants.SLASH
+
 object TelegramApiConstants {
     const val CHAT_ID = "chat_id"
     const val REPLY_MARKUP = "reply_markup"
@@ -40,4 +42,5 @@ object TelegramApiConstants {
     const val SECRET_TOKEN = "secret_token"
     const val CERTIFICATE = "certificate"
     const val CALLBACK = "callback"
+    const val GET_UPDATES = SLASH + "getupdates"
 }
