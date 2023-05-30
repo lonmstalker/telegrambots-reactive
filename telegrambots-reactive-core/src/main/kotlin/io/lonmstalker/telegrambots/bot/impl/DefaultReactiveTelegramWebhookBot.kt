@@ -12,7 +12,6 @@ import io.lonmstalker.telegrambots.util.internal.InternalHolder.getJacksonSerial
 import io.lonmstalker.telegrambots.util.internal.InternalHolder.getObjectMapper
 import okhttp3.OkHttpClient
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook
-import reactor.core.publisher.Mono
 
 abstract class DefaultReactiveTelegramWebhookBot(
     private val botToken: String,
@@ -44,12 +43,11 @@ abstract class DefaultReactiveTelegramWebhookBot(
 
     override fun getBotToken(): String = this.botToken
 
-    override fun setWebhook(webHook: SetWebhook): Mono<Boolean> =
-        Mono.fromCallable {
-            this.httpClient.newCall(this.builder.registerWebHook(this.getBotPath(), webHook, options))
-                .execute()
-                .body
-                ?.bytes()
-                ?.let { this.deserializeApi.deserialize(it, Boolean::class.java) }
-        }
+    override fun setWebhook(webHook: SetWebhook): Boolean =
+        this.httpClient.newCall(this.builder.registerWebHook(this.getBotPath(), webHook, options))
+            .execute()
+            .body
+            ?.bytes()
+            ?.let { this.deserializeApi.deserialize(it, Boolean::class.java) }
+            ?: false
 }
