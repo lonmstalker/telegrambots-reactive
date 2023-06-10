@@ -4,3 +4,7 @@ server:
 app:
   bot:
     token: ${BOT_TOKEN:}
+
+logging:
+  level:
+    io.lonmstalker.telegrambots: ${LOG_LEVEL_TELEGRAM:error}

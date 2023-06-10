@@ -306,6 +306,7 @@ class DefaultTelegramRequestBuilder(
 
     fun <T : Serializable> executeMethod(method: BotApiMethod<T>): Request =
         Request.Builder()
+            .url(this.baseUrl)
             .post(this.serializeApi.serialize(method).toRequestBody(jsonType))
             .build()
 }

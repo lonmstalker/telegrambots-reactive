@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.lonmstalker.telegrambots.bot.DefaultBotOptions
 import io.lonmstalker.telegrambots.bot.ReactiveLongPoolingBot
 import io.lonmstalker.telegrambots.constants.ErrorConstants.LOG_ERROR_REMOVE_OLD_WEBHOOK
+import io.lonmstalker.telegrambots.extension.sendUnsafeApiMethod
+import io.lonmstalker.telegrambots.model.telegram.DeleteWebhookResponse
 import io.lonmstalker.telegrambots.serde.DeserializeApi
 import io.lonmstalker.telegrambots.serde.SerializeApi
-import io.lonmstalker.telegrambots.util.internal.InternalHolder
 import io.lonmstalker.telegrambots.util.internal.InternalHolder.getBotIdIncrementer
 import io.lonmstalker.telegrambots.util.internal.InternalHolder.getJacksonDeserializeApi
 import io.lonmstalker.telegrambots.util.internal.InternalHolder.getJacksonSerializeApi
@@ -49,15 +50,13 @@ abstract class DefaultReactiveTelegramLongPoolingBot(
 
     override fun getBotToken(): String = this.botToken
 
-    override fun clearWebhook(): Mono<Boolean> {
-        val rp = this.sendApiMethod(DeleteWebhook(), Boolean::class.java) as Mono
-        return rp
+    final override fun clearWebhook(): Mono<Boolean> =
+        sendUnsafeApiMethod<DeleteWebhookResponse>(DeleteWebhook())
             .handle { response, sink ->
-                if (!response) {
+                if (!response.ok) {
                     sink.error(TelegramApiRequestException(LOG_ERROR_REMOVE_OLD_WEBHOOK))
                 } else {
-                    sink.next(response)
+                    sink.next(true)
                 }
             }
-    }
 }

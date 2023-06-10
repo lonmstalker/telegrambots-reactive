@@ -1,23 +1,29 @@
 package io.lonmstalker.telegrambots.api.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.lonmstalker.telegrambots.api.LongPoolingApi
 import io.lonmstalker.telegrambots.bot.DefaultBotOptions
 import io.lonmstalker.telegrambots.bot.ReactiveLongPoolingBot
 import io.lonmstalker.telegrambots.callback.LongPoolingCallback
 import io.lonmstalker.telegrambots.constants.ErrorConstants.BOT_API_ALREADY_STARTED
 import io.lonmstalker.telegrambots.constants.ErrorConstants.BOT_API_ALREADY_STOPPED
+import io.lonmstalker.telegrambots.constants.LogConstants.LOG_NEXT_LONG_POOLING_END
+import io.lonmstalker.telegrambots.constants.LogConstants.LOG_NEXT_LONG_POOLING_START
 import io.lonmstalker.telegrambots.constants.MediaTypeConstants.jsonType
 import io.lonmstalker.telegrambots.constants.TelegramApiConstants.GET_UPDATES
 import io.lonmstalker.telegrambots.model.UpdateData
 import io.lonmstalker.telegrambots.serde.DeserializeApi
 import io.lonmstalker.telegrambots.serde.SerializeApi
+import io.lonmstalker.telegrambots.util.internal.InternalHolder.getJacksonDeserializeApi
+import io.lonmstalker.telegrambots.util.internal.InternalHolder.getJacksonSerializeApi
+import io.lonmstalker.telegrambots.util.internal.InternalHolder.getObjectMapper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.methods.updates.GetUpdates
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -25,12 +31,42 @@ import java.util.concurrent.atomic.AtomicBoolean
  * (!!) use only one instance, object of this class is shared
  */
 class DefaultLongPoolingApi @JvmOverloads constructor(
+    callbacks: Collection<ReactiveLongPoolingBot>,
     private val httpClient: OkHttpClient,
     private val serializeApi: SerializeApi,
     private val deserializeApi: DeserializeApi,
     private val sink: MutableSharedFlow<UpdateData>,
     private val options: DefaultBotOptions = DefaultBotOptions()
 ) : LongPoolingApi {
+
+    constructor(
+        callbacks: Collection<ReactiveLongPoolingBot>,
+        httpClient: OkHttpClient,
+        sink: MutableSharedFlow<UpdateData>,
+        objectMapper: ObjectMapper
+    ) :
+            this(
+                callbacks,
+                httpClient,
+                getJacksonSerializeApi(objectMapper),
+                getJacksonDeserializeApi(objectMapper),
+                sink,
+                DefaultBotOptions(),
+            )
+
+    constructor(
+        callbacks: Collection<ReactiveLongPoolingBot>,
+        httpClient: OkHttpClient,
+        sink: MutableSharedFlow<UpdateData>
+    ) :
+            this(
+                callbacks,
+                httpClient,
+                getJacksonSerializeApi(getObjectMapper()),
+                getJacksonDeserializeApi(getObjectMapper()),
+                sink,
+                DefaultBotOptions(),
+            )
 
     @Volatile
     internal var lastReceivedUpdate = 0
@@ -40,11 +76,7 @@ class DefaultLongPoolingApi @JvmOverloads constructor(
 
     private var reader: Deferred<Unit>? = null
     private val isRunning = AtomicBoolean()
-    private val callbacks = CopyOnWriteArrayList<Pair<ReactiveLongPoolingBot, String>>()
-
-    override fun addCallback(bot: ReactiveLongPoolingBot) {
-        this.callbacks.add(bot to this.createBotUrl(bot.botToken))
-    }
+    private val callbacks = callbacks.associateWith { this.createBotUrl(it.botToken) }
 
     override fun start() {
         if (this.isRunning.get()) {
@@ -70,19 +102,23 @@ class DefaultLongPoolingApi @JvmOverloads constructor(
     private fun getReader(): Deferred<Unit> =
         CoroutineScope(Dispatchers.IO).async {
             while (isRunning()) {
+                log.debug(LOG_NEXT_LONG_POOLING_START)
+
                 coroutineScope {
                     callbacks
-                        .map { launch { callTelegramApi(it) } }
+                        .map { launch { callTelegramApi(it.key, it.value) } }
                         .forEach { it.join() }
                 }
+
+                log.debug(LOG_NEXT_LONG_POOLING_END, updatesDelay)
                 delay(updatesDelay)
             }
         }
 
-    private fun callTelegramApi(bot: Pair<ReactiveLongPoolingBot, String>) =
+    private fun callTelegramApi(bot: ReactiveLongPoolingBot, botUrl: String) =
         this.httpClient
-            .newCall(this.getRequest(bot.second, this.getUpdatesRequest()))
-            .enqueue(LongPoolingCallback(bot.first.id, this.options, this.deserializeApi, this.sink, this))
+            .newCall(this.getRequest(botUrl, this.getUpdatesRequest()))
+            .enqueue(LongPoolingCallback(bot.id, this.options, this.deserializeApi, this.sink, this))
 
     private fun getRequest(botUrl: String, updates: GetUpdates) =
         Request
@@ -103,4 +139,9 @@ class DefaultLongPoolingApi @JvmOverloads constructor(
                 }
             }
             .build()
+
+    companion object {
+        @JvmStatic
+        private val log = LoggerFactory.getLogger(DefaultLongPoolingApi::class.java)
+    }
 }

@@ -1,6 +1,7 @@
 package io.lonmstalker.telegrambots.callback
 
 import io.lonmstalker.telegrambots.constants.ErrorConstants.LOG_EMPTY_BODY_RESPONSE
+import io.lonmstalker.telegrambots.constants.LogConstants.LOG_RESPONSE
 import io.lonmstalker.telegrambots.serde.DeserializeApi
 import okhttp3.*
 import org.slf4j.LoggerFactory
@@ -18,8 +19,14 @@ class OkHttpResponseCallback<T>(
     }
 
     override fun onResponse(call: Call, response: Response) {
-        response.body
-            ?.bytes()
+        val bytes = response.body?.bytes()
+
+        if (log.isDebugEnabled) {
+            val responseTime = response.receivedResponseAtMillis - response.sentRequestAtMillis
+            log.debug(LOG_RESPONSE, responseTime, response.code, bytes?.let { String(it) })
+        }
+
+        bytes
             ?.let { this.sink.success(deserializeApi.deserialize(it, clazz)) }
             ?: this.sink.success().apply { log.error(LOG_EMPTY_BODY_RESPONSE, response.code) }
     }

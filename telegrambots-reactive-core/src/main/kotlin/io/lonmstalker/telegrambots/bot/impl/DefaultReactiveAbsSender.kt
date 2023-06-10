@@ -8,7 +8,6 @@ import io.lonmstalker.telegrambots.serde.DeserializeApi
 import io.lonmstalker.telegrambots.serde.SerializeApi
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.reactivestreams.Publisher
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.methods.groupadministration.SetChatPhoto
 import org.telegram.telegrambots.meta.api.methods.send.*
@@ -29,102 +28,103 @@ open class DefaultReactiveAbsSender(
 ) : ReactiveAbsSender {
     private val requestBuilder = DefaultTelegramRequestBuilder(botToken, serializeApi, options)
 
-    override fun execute(method: SendDocument): Publisher<Message> =
+    override fun execute(method: SendDocument): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendPhoto): Publisher<Message> =
+    override fun execute(method: SendPhoto): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendVideo): Publisher<Message> =
+    override fun execute(method: SendVideo): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendVideoNote): Publisher<Message> =
+    override fun execute(method: SendVideoNote): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendSticker): Publisher<Message> =
+    override fun execute(method: SendSticker): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendAudio): Publisher<Message> =
+    override fun execute(method: SendAudio): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendVoice): Publisher<Message> =
+    override fun execute(method: SendVoice): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendMediaGroup): Publisher<List<Message>> =
+    override fun execute(method: SendMediaGroup): Mono<List<Message>> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SetChatPhoto): Publisher<Boolean> =
+    override fun execute(method: SetChatPhoto): Mono<Boolean> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: AddStickerToSet): Publisher<Boolean> =
+    override fun execute(method: AddStickerToSet): Mono<Boolean> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SetStickerSetThumb): Publisher<Boolean> =
+    override fun execute(method: SetStickerSetThumb): Mono<Boolean> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: CreateNewStickerSet): Publisher<Boolean> =
+    override fun execute(method: CreateNewStickerSet): Mono<Boolean> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: UploadStickerFile): Publisher<File> =
+    override fun execute(method: UploadStickerFile): Mono<File> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: EditMessageMedia): Publisher<Serializable> =
+    override fun execute(method: EditMessageMedia): Mono<Serializable> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun execute(method: SendAnimation): Publisher<Message> =
+    override fun execute(method: SendAnimation): Mono<Message> =
         this.requestBuilder
             .execute(method)
             .let { this.callApi(it) }
 
-    override fun <T : Serializable, M : BotApiMethod<T>> sendApiMethodSerializable(method: M): Publisher<Serializable> =
+    override fun <T : Serializable> sendApiMethodSerializable(method: BotApiMethod<T>): Mono<Serializable> =
         this.requestBuilder
             .executeMethod(method)
             .let { this.callApi(it) }
 
-    override fun <T : Serializable, M : BotApiMethod<T>> sendApiMethod(method: M, clazz: Class<T>): Publisher<T> =
+    override fun <T : Serializable> sendApiMethod(method: BotApiMethod<T>, clazz: Class<T>): Mono<T> =
         this.requestBuilder
             .executeMethod(method)
-            .let { request ->
-                Mono.create {
-                    this.httpClient
-                        .newCall(request)
-                        .enqueue(OkHttpResponseCallback(clazz, it, this.deserializeApi))
-                }
-            }
+            .let { callApi(it, clazz) }
 
-    private inline fun <reified T> callApi(request: Request): Publisher<T> =
+    override fun <T : Serializable> sendUnsafeApiMethod(method: BotApiMethod<*>, clazz: Class<T>): Mono<T> =
+        this.requestBuilder
+            .executeMethod(method)
+            .let { callApi(it, clazz) }
+
+    private fun <T> callApi(request: Request, clazz: Class<T>): Mono<T> =
         Mono.create {
             this.httpClient
                 .newCall(request)
-                .enqueue(OkHttpResponseCallback(T::class.java, it, this.deserializeApi))
+                .enqueue(OkHttpResponseCallback(clazz, it, this.deserializeApi))
         }
+
+    private inline fun <reified T> callApi(request: Request): Mono<T> = callApi(request, T::class.java)
 
 }

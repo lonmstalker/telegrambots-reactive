@@ -23,7 +23,7 @@ class CustomDefaultReactiveTelegramLongPoolingBot(
     httpClient: OkHttpClient,
     appProperties: AppProperties,
     objectMapper: ObjectMapper
-) : DefaultReactiveTelegramLongPoolingBot(httpClient, { appProperties.bot.token }, objectMapper) {
+) : DefaultReactiveTelegramLongPoolingBot(httpClient, appProperties.bot.token, objectMapper) {
 
     override fun onUpdateReceived(update: Flux<Update>): Publisher<Void> =
         update

@@ -1,4 +1,4 @@
-package io.lonmstalker.telegrambots.api.impl
+package io.lonmstalker.telegrambots.api.rest
 
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -12,25 +12,15 @@ import io.ktor.server.routing.*
 import io.lonmstalker.telegrambots.bot.ReactiveWebhookBot
 import org.telegram.telegrambots.meta.api.objects.Update
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.set
 
-object KtorRestApi {
+internal object KtorRestApi {
     private const val BOT_PATH = "botPath"
     private var defaultCallback: ReactiveWebhookBot? = null
-    private var callbacks: ConcurrentHashMap<String, ReactiveWebhookBot>? = null
+    private var defaultCallbacks: Map<String, ReactiveWebhookBot>? = null
 
-    internal fun registerCallback(callback: ReactiveWebhookBot) {
-        if (defaultCallback == null && callbacks == null) {
-            this.defaultCallback = callback
-        } else {
-            this.defaultCallback = null
-            val callbacks = this.callbacks
-                ?: ConcurrentHashMap<String, ReactiveWebhookBot>().also { this.callbacks = it }
-            callbacks[callback.getBotPath()] = callback
-        }
-    }
-
-    fun Application.botApi() {
+    fun Application.botApi(callback: ReactiveWebhookBot?, callbacks: Collection<ReactiveWebhookBot>?) {
+        defaultCallback = callback
+        defaultCallbacks = callbacks?.associate { it.getBotPath() to it }
         this.routing { post("/{$BOT_PATH}") { botRequest(this.call) } }
     }
 
@@ -39,7 +29,7 @@ object KtorRestApi {
         val botPath = call.parameters[BOT_PATH] ?: return call.respond(BadRequest)
 
         if (update == null) {
-            val response = if (this.getCallback(botPath) != null) {
+            val response = if (getCallback(botPath) != null) {
                 "Hi there $botPath!"
             } else {
                 "Callback not found for $botPath"
@@ -59,10 +49,10 @@ object KtorRestApi {
     }
 
     private fun getCallback(botPath: String) =
-        if (this.defaultCallback != null) {
-            this.defaultCallback
+        if (defaultCallback != null) {
+            defaultCallback
         } else {
-            this.callbacks!![botPath]
+            defaultCallbacks!![botPath]
         }
 
 }

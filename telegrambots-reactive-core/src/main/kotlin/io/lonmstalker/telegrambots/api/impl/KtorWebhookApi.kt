@@ -5,7 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.lonmstalker.telegrambots.api.WebhookApi
-import io.lonmstalker.telegrambots.api.impl.KtorRestApi.botApi
+import io.lonmstalker.telegrambots.api.rest.KtorRestApi.botApi
 import io.lonmstalker.telegrambots.bot.ReactiveWebhookBot
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.File
@@ -15,7 +15,7 @@ import java.io.File
  * (!!) use only one instance, object of this class is shared
  * (!!) bots must have only one host and port, alias = webHookBot
  */
-class DefaultWebhookApi @JvmOverloads constructor(
+class KtorWebhookApi @JvmOverloads constructor(
     private val botPort: Int = 10240,
     private val botHost: String,
     private val keyStoreFile: String? = null,
@@ -29,9 +29,17 @@ class DefaultWebhookApi @JvmOverloads constructor(
         }
     }
 
-    override fun startServer() {
+    override fun startServer(callback: ReactiveWebhookBot) {
+        this.startServer(callback, null)
+    }
+
+    override fun startServer(callbacks: Collection<ReactiveWebhookBot>) {
+        this.startServer(null, callbacks)
+    }
+
+    private fun startServer(callback: ReactiveWebhookBot?, callbacks: Collection<ReactiveWebhookBot>?) {
         val env = applicationEngineEnvironment {
-            module { botApi() }
+            module { botApi(callback, callbacks) }
             connector {
                 this.port = botPort
                 this.host = botHost
@@ -50,10 +58,6 @@ class DefaultWebhookApi @JvmOverloads constructor(
             }
         }
         embeddedServer(Netty, environment = env).start(true)
-    }
-
-    override fun registerWebhook(bot: ReactiveWebhookBot) {
-        KtorRestApi.registerCallback(bot)
     }
 
     private fun getKeyStore() = buildKeyStore { }

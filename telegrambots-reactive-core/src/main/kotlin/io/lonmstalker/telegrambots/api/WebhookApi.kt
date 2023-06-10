@@ -6,7 +6,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 interface WebhookApi {
 
     @Throws(TelegramApiException::class)
-    fun startServer()
+    fun startServer(callback: ReactiveWebhookBot)
 
-    fun registerWebhook(bot: ReactiveWebhookBot)
+    @Throws(TelegramApiException::class)
+    fun startServer(callbacks: Collection<ReactiveWebhookBot>)
 }

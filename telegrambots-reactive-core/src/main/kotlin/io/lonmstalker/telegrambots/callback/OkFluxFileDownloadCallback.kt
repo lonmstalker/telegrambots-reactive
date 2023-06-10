@@ -1,6 +1,9 @@
 package io.lonmstalker.telegrambots.callback
 
+import io.lonmstalker.telegrambots.callback.OkMonoFileDownloadCallback.Companion.logFileDownload
 import io.lonmstalker.telegrambots.constants.ErrorConstants.LOG_EMPTY_BODY_RESPONSE
+import io.lonmstalker.telegrambots.constants.LogConstants
+import io.lonmstalker.telegrambots.constants.LogConstants.LOG_RESPONSE
 import io.lonmstalker.telegrambots.constants.TelegramBotsConstants.DEFAULT_CHUNK_SIZE
 import okhttp3.Call
 import okhttp3.Callback
@@ -9,6 +12,7 @@ import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.FluxSink
 import java.io.IOException
+import java.nio.charset.Charset
 import java.util.Arrays
 
 class OkFluxFileDownloadCallback(
@@ -22,13 +26,16 @@ class OkFluxFileDownloadCallback(
     }
 
     override fun onResponse(call: Call, response: Response) {
-        val stream = response.body?.byteStream()
-        if (stream != null) {
+        val byteStream = response.body?.byteStream()
+
+        logFileDownload(log, response, byteStream)
+
+        if (byteStream != null) {
             if (response.body!!.contentLength() <= this.chunkSize) {
-                this.sink.next(stream.readAllBytes())
+                this.sink.next(byteStream.readAllBytes())
             } else {
-                while (stream.available() != 0) {
-                    IOUtils.read(stream, this.dataArray)
+                while (byteStream.available() != 0) {
+                    IOUtils.read(byteStream, this.dataArray)
                     this.sink.next(this.dataArray)
                     Arrays.fill(this.dataArray, 0)
                 }
